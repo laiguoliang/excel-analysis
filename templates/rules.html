@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>商品關聯分析圖表</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<h2>📊 商品組合分析 - 支援度 / 信心值 / 提升度</h2>
+<canvas id="confidenceChart" width="800" height="400"></canvas>
+<canvas id="bubbleChart" width="800" height="400"></canvas>
+
+<script>
+function getColor(i) {
+  const colors = [
+    "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728",
+    "#9467bd", "#8c564b", "#e377c2", "#7f7f7f",
+    "#bcbd22", "#17becf"
+  ];
+  return colors[i % colors.length];
+}
+
+fetch("/api/rules").then(res => res.json()).then(data => {
+  const rules = data.map(r => ({
+    label: `${r.antecedents.join(',')} → ${r.consequents.join(',')}`,
+    confidence: r.confidence * 100,
+    support: r.support,
+    lift: r.lift
+  }));
+
+  const top = [...rules].sort((a, b) => b.confidence - a.confidence).slice(0, 10);
+  new Chart(document.getElementById("confidenceChart"), {
+    type: "bar",
+    data: {
+      labels: top.map(r => r.label),
+      datasets: [{
+        label: "信心值 (%)",
+        data: top.map(r => r.confidence),
+        backgroundColor: top.map((_, i) => getColor(i))
+      }]
+    },
+    options: {
+      indexAxis: "y",
+      responsive: true,
+      plugins: { title: { display: true, text: "Top 10 商品關聯信心值" } }
+    }
+  });
+
+  new Chart(document.getElementById("bubbleChart"), {
+    type: "bubble",
+    data: {
+      datasets: rules.map((r, i) => ({
+        label: r.label,
+        data: [{ x: r.support, y: r.confidence, r: r.lift * 10 }],
+        backgroundColor: getColor(i),
+        borderColor: "#333",
+        borderWidth: 1
+      }))
+    },
+    options: {
+      responsive: true,
+      plugins: { title: { display: true, text: "商品組合：支援度 vs 信心值 (氣泡大小 = 提升度)" } },
+      scales: {
+        x: { title: { display: true, text: "Support" }, min: 0 },
+        y: { title: { display: true, text: "Confidence (%)" }, min: 0 }
+      }
+    }
+  });
+});
+</script>
+</body>
+</html>

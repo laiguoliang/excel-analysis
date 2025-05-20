@@ -1,0 +1,12 @@
+data_application/
+├── app.py                  👉 Flask 主程式
+├── data/
+│   ├── sales.xlsx          👉 模擬銷售資料
+│   └── customers.xlsx      👉 顧客資訊
+├── templates/
+│   ├── index.html          👉 分析首頁
+│   ├── clusters.html       👉 顧客分群視覺化
+│   └── rules.html          👉 關聯分析圖表
+├── analysis/
+│   ├── clustering.py       👉 KMeans 顧客分群
+│   └── apriori_rules.py    👉 商品關聯分析

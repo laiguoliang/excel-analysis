@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>顧客分群圖表</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script></head>
+<body>
+<h2>顧客分群散佈圖</h2>
+<canvas id="clusterChart" width="600" height="400"></canvas>
+<script>
+fetch("/api/cluster").then(res => res.json()).then(data => {
+  const colors = ['red', 'blue', 'green'];
+  const datasets = [0,1,2].map(i => ({
+    label: '群組 ' + i,
+    data: data.filter(d => d["分群"] === i).map(d => ({x: d["購買次數"], y: d["年購買金額"]})),
+    backgroundColor: colors[i]
+  }));
+  new Chart(document.getElementById("clusterChart"), {
+    type: 'scatter',
+    data: { datasets },
+    options: {
+      scales: {
+        x: { title: { display: true, text: '購買次數' } },
+        y: { title: { display: true, text: '年購買金額' } }
+      }
+    }
+  });
+});
+</script></body></html>
